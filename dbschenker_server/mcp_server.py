@@ -8,6 +8,7 @@ from mcp.server.fastmcp import FastMCP
 # Initialize mcp server 
 # TODO: Change this argument
 mcp = FastMCP("Schenker")
+logger = logging.getLogger(__name__)
 
 # Constants
 # TODO: Change this var name
@@ -16,12 +17,14 @@ DBSCHENKER_BASE = "https://www.dbschenker.com/app/tracking-public/?refNumber="
 
 
 @mcp.tool()
-async def get_shipment_info(reference_number: str) -> str:
-    """Get formatted shipment info.
-Includes: sender and receiver names and addresses, package details (weight, dimensions, piece count, etc.), complete tracking history for the shipment as a whole, and individual tracking history for every package.
+async def get_shipment_information(reference_number: str) -> str:
+    """Get shipment details, shipment history, and individual package history in a formatted string.
 Args:
     reference_number: DB Schenker Reference number for the shipment
 """
+    
+
+
 
 async def scrape_shipment_tracking_history(reference_number: str) -> list[dict]:
     """"""
@@ -53,7 +56,7 @@ Args:
     await dialog.wait_for(state="hidden")
     await page.screenshot(path="screenshots/cookie-accept.png")
 
-async def read_shipment_info(page: Page) -> dict:
+async def scrape_shipment_details(page: Page) -> dict:
     """Takes a DB Schenker shipment page and returns the information from the 'Shipment Details' area.
 Args:
     page: A Playwright page object that has already gone to a specific DB Schenker shipment's page"""
@@ -82,19 +85,44 @@ Args:
         results[point] = value
     
     await page.screenshot(path="screenshots/ship-page.png")
-
+    logger.info(results)
     return results
 
-async def read_shipment_history(page: Page) -> list[dict]:
+async def scrape_shipment_history(page: Page) -> list[dict]:
     """Takes a DB Schenker shipment page and returns the information from the 'Shipment Status History' area.
 Args:
-    page: A Playwright page object that has already gone to a specific DB Schenker shipment's page"""
+    page: A Playwright page object that has already gone to a specific DB Schenker shipment's page
+"""
+    logger.info("Trying to get history")
+    status_history = []
+    await page.get_by_role("button", name="Shipment Status History").click()    # Open drop-down
 
-    # history_table = page.locator("table").filter(has=page.locator('[data-test="shipment_status_history_event_label"]'))
-    # rows = specific_table.locator("tr")
-    # then go through the rows to find each event and its data
-    shipment_statuses = []
+    # Locate the html table for shipment event history
+    history_table = page.locator("table").filter(has=page.locator('[data-test="shipment_status_history_event_label"]'))
     
+    # Locate all rows in said table with CSS selector
+    rows = history_table.locator("tbody tr")
+    row_count = await rows.count()
+
+    for i in range(row_count):
+        row = dict()
+        # Select the nth rows data items
+        event = page.locator(f'[data-test="shipment_status_history_event_{i}_value"]')
+        date = page.locator(f'[data-test="shipment_status_history_date_{i}_value"]')
+        location = page.locator(f'[data-test="shipment_status_history_location_{i}_value"]')
+        reasons = page.locator(f'[data-test="shipment_status_history_reasons_{i}_value"]')
+
+        row["event"] = await event.inner_text()
+        row["date"] = await date.inner_text()
+        row["location"] = await location.inner_text()
+        row["reasons"] = await reasons.inner_text()
+
+        status_history.append(row)
+
+    logger.info(status_history)
+
+    return status_history
+
 
 async def main():
     async with async_playwright() as pw:
@@ -102,6 +130,8 @@ async def main():
         context = await browser.new_context()
         page = await context.new_page()
         await goto_shipment_page(page, "1806203236")
+        await read_shipment_info(page)
+        await read_shipment_history(page)
         await browser.close()
 
 asyncio.run(main())
