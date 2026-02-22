@@ -17,9 +17,9 @@ DBSCHENKER_SEARCH_URL = "https://www.dbschenker.com/app/tracking-public/?refNumb
 @mcp.tool()
 async def get_shipment_info(reference_number: str) -> dict:
     """Get DB Schenker shipment details, shipment history, and individual package history in a formatted string.
-Args:
-    reference_number: DB Schenker Reference number for the shipment
-"""
+    Args:
+        reference_number: DB Schenker Reference number for the shipment
+    """
     async with async_playwright() as pw:
         # Set up browser tab
         browser = await pw.chromium.launch()
@@ -38,10 +38,10 @@ Args:
 
 async def goto_shipment_page(page: Page, reference_number: str) -> None:
     """Visits shipment page for reference number and removes any cookie pop-ups.
-Args:
-    page: The Playwright Page object to use
-    reference_number: DB Schenker Reference number for the shipment
-"""
+    Args:
+        page: The Playwright Page object to use
+        reference_number: DB Schenker Reference number for the shipment
+    """
     # 1. Visit page, get cookie dialog
     await page.goto(DBSCHENKER_SEARCH_URL+reference_number)
 
@@ -53,8 +53,9 @@ Args:
 
 async def scrape_shipment_details(page: Page) -> dict:
     """Returns the information from the 'Shipment Details' area.
-Args:
-    page: A Playwright page object that has already gone to a specific DB Schenker shipment's page"""
+    Args:
+        page: A Playwright page object that has already gone to a specific DB Schenker shipment's page
+    """
     logging.info("Scraping shipment details...")
     
     data_points = [
@@ -86,9 +87,9 @@ Args:
 
 async def scrape_shipment_history(page: Page) -> list[dict]:
     """Returns the information from the 'Shipment Status History' area.
-Args:
-    page: A Playwright page object that has already gone to a specific DB Schenker shipment's page
-"""
+    Args:
+        page: A Playwright page object that has already gone to a specific DB Schenker shipment's page
+    """
     logger.info("Scraping shipment history...")
     status_history = []
     await page.get_by_role("button", name="Shipment Status History").click()    # Open drop-down to expose data
@@ -121,9 +122,9 @@ Args:
 
 async def scrape_packages_history(page: Page) -> dict[str, list[dict[str, str]]]:
     """Returns a dictionary of package IDs mapping to history info.
-Args:
-    page: A Playwright page object that has already gone to a specific DB Schenker shipment's page
-"""
+    Args:
+        page: A Playwright page object that has already gone to a specific DB Schenker shipment's page
+    """
     packages_history = dict()
     await page.get_by_role("button", name="Packages").click()   # Open drop-down
 
@@ -142,8 +143,9 @@ Args:
 
 async def scrape_package_history(table: Locator):
     """Extracts and returns the data from the given history table
-Args:
-    table: playwright locator for the table containing the package history for a specific package in the 'Packages' region of the DB Schenker shipment page"""
+    Args:
+        table: playwright locator for the table containing the package history for a specific package in the 'Packages' region of the DB Schenker shipment page
+    """
     history = []
     more_rows = True
     headers = ["Event", "Country", "Place", "Date"]
@@ -168,9 +170,16 @@ Args:
 
     return history
 
+def main():
+    mcp.run(transport="stdio")
 
+if __name__ == "__main__":
+    main()
+
+""" for debugging
 async def main():
-    res = await get_shipment_info("1806290829")
-    logger.info(res)
+   res = await get_shipment_info("1806290829")
+   logger.info(res)
 
 asyncio.run(main())
+"""
