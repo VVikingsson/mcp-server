@@ -5,12 +5,9 @@ from mcp.server.fastmcp import FastMCP
 
 
 # Initialize mcp server and logger
-# TODO: Change this argument
 mcp = FastMCP("Schenker")
 logger = logging.getLogger(__name__)
 
-# Constants
-# TODO: Change this var name
 DBSCHENKER_SEARCH_URL = "https://www.dbschenker.com/app/tracking-public/?refNumber="
 
 
@@ -20,20 +17,35 @@ async def get_shipment_info(reference_number: str) -> dict:
     Args:
         reference_number: DB Schenker Reference number for the shipment
     """
+    shipment_data = dict()
+
     async with async_playwright() as pw:
         # Set up browser tab
         browser = await pw.chromium.launch()
         context = await browser.new_context()
         page = await context.new_page()
         # Perform actions
-        await goto_shipment_page(page, reference_number)
-        shipment_details = await scrape_shipment_details(page)
-        shipment_history = await scrape_shipment_history(page)
-        packages_history = await scrape_packages_history(page)
-
+        try:
+            await goto_shipment_page(page, reference_number)
+        except Exception as e:
+            return {"error": f"Error going to page: {str(e)}"}
+        
+        try:
+            shipment_data["shipment_details"] = await scrape_shipment_details(page)
+        except Exception as e:
+            shipment_data["shipment_details"] = f"ERROR: {str(e)}"
+        try:
+            shipment_data["shipment_history"] = await scrape_shipment_history(page)
+        except Exception as e:
+            shipment_data["shipment_history"] = f"ERROR: {str(e)}"
+        try:
+            shipment_data["packages_history"] = await scrape_packages_history(page)
+        except Exception as e:
+            shipment_data["packages_history"] = f"ERROR: {str(e)}"
+        
         await browser.close()
-        shipment_data = {"details": shipment_details, "shipment_history": shipment_history, "invividual_packages_history": packages_history}
-        return shipment_data
+
+    return shipment_data
 
 
 async def goto_shipment_page(page: Page, reference_number: str) -> None:
@@ -42,13 +54,12 @@ async def goto_shipment_page(page: Page, reference_number: str) -> None:
         page: The Playwright Page object to use
         reference_number: DB Schenker Reference number for the shipment
     """
-    # 1. Visit page, get cookie dialog
     await page.goto(DBSCHENKER_SEARCH_URL+reference_number)
-
-    # 2. Click required cookies and wait for dialog to close
-    await page.get_by_role("button", name="Required Cookies").click()
     dialog = page.get_by_role("dialog")
-    await dialog.wait_for(state="hidden")
+    try:
+        await page.get_by_role("button", name="Required Cookies").click(timeout=500)
+    except:
+        pass # Button is assumed to not have showed up, move on
 
 
 async def scrape_shipment_details(page: Page) -> dict:
@@ -72,7 +83,6 @@ async def scrape_shipment_details(page: Page) -> dict:
         "loading_meters_value",
         "number_of_pieces_value"
     ]
-
     results = dict()
 
     for point in data_points:
@@ -176,7 +186,7 @@ def main():
 if __name__ == "__main__":
     main()
 
-""" for debugging
+"""
 async def main():
    res = await get_shipment_info("1806290829")
    logger.info(res)
