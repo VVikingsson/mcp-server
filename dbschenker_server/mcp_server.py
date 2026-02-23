@@ -1,6 +1,6 @@
 import logging
 import asyncio
-from playwright.async_api import async_playwright, Playwright, Page, Locator
+from playwright.async_api import async_playwright, Page, Locator
 from mcp.server.fastmcp import FastMCP
 
 
@@ -8,42 +8,53 @@ from mcp.server.fastmcp import FastMCP
 mcp = FastMCP("Schenker")
 logger = logging.getLogger(__name__)
 
+TIMEOUT = 5000  # The default timeout is 30s in playwright. Not good for the end user.
 DBSCHENKER_SEARCH_URL = "https://www.dbschenker.com/app/tracking-public/?refNumber="
 
 
 @mcp.tool()
 async def get_shipment_info(reference_number: str) -> dict:
-    """Get DB Schenker shipment details, shipment history, and individual package history in a formatted string.
+    """Get DB Schenker shipment details, shipment history, and individual package history in a formatted string. If any errors occur, they are found in the 'errors' fields of the response.
     Args:
         reference_number: DB Schenker Reference number for the shipment
     """
-    shipment_data = dict()
+    shipment_data = dict()  # We will populate this with scraped data and error messages
+    browser = None # Initialize just for it to exist in scope later
 
     async with async_playwright() as pw:
-        # Set up browser tab
-        browser = await pw.chromium.launch()
-        context = await browser.new_context()
-        page = await context.new_page()
-        # Perform actions
         try:
-            await goto_shipment_page(page, reference_number)
-        except Exception as e:
-            return {"error": f"Error going to page: {str(e)}"}
+            # Set up browser tab
+            browser = await pw.chromium.launch()
+            context = await browser.new_context()
+            page = await context.new_page()
         
-        try:
-            shipment_data["shipment_details"] = await scrape_shipment_details(page)
+            # Go to DB Schenker page
+            try:
+                await goto_shipment_page(page, reference_number)
+            except Exception as e:
+                shipment_data["errors"]["goto_shipment_page"] = f"Error going to page: {str(e)}"
+            
+            # Scrape data
+            try:
+                shipment_data["shipment_details"] = await scrape_shipment_details(page)
+            except Exception as e:
+                shipment_data["errors"]["shipment_details"] = f"Error scraping shipment detail: {str(e)}"
+
+            try:
+                shipment_data["shipment_history"] = await scrape_shipment_history(page)
+            except Exception as e:
+                shipment_data["errors"]["shipment_history"] = f"Error scraping shipment history: {str(e)}"
+
+            try:
+                shipment_data["package_histories"] = await scrape_packages_history(page)
+            except Exception as e:
+                shipment_data["errors"]["package_histories"] = f"Error scraping shipments individual package histories: {str(e)}"
+            
         except Exception as e:
-            shipment_data["shipment_details"] = f"ERROR: {str(e)}"
-        try:
-            shipment_data["shipment_history"] = await scrape_shipment_history(page)
-        except Exception as e:
-            shipment_data["shipment_history"] = f"ERROR: {str(e)}"
-        try:
-            shipment_data["packages_history"] = await scrape_packages_history(page)
-        except Exception as e:
-            shipment_data["packages_history"] = f"ERROR: {str(e)}"
+            shipment_data["errors"]["launch_browser"] = f"Error setting up headless browser (Playwright error): {str(e)}"
         
-        await browser.close()
+        if browser:
+            await browser.close()
 
     return shipment_data
 
