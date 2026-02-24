@@ -1,5 +1,6 @@
 import logging
 import asyncio
+from exceptions import *
 from playwright.async_api import async_playwright, Page, Locator
 from mcp.server.fastmcp import FastMCP
 
@@ -9,11 +10,11 @@ mcp = FastMCP("Schenker")
 logger = logging.getLogger(__name__)
 
 DBSCHENKER_SEARCH_URL = "https://www.dbschenker.com/app/tracking-public/?refNumber="
-TIMEOUT = 20000 # This was chosen after testing on a 'fast 3G' network throttle found on 'https://sdetective.blog/blog/qa_auto/pw-cdp/networking-throttle_en'. 'fast 3G' is hence what I decided to be the minimum usable connection for this tool.
+TIMEOUT = 5000 # This was chosen after testing on a 'fast 3G' network throttle found on 'https://sdetective.blog/blog/qa_auto/pw-cdp/networking-throttle_en'. 'fast 3G' is hence what I decided to be the minimum usable connection for this tool.
 
 @mcp.tool()
 async def get_shipment_info(reference_number: str) -> dict:
-    """Retrieves DB Schenker shipment information.
+    """Retrieves live tracking data of a DB Schenker shipment.
     Args:
         reference_number: DB Schenker Reference number for the shipment
     Returns:
@@ -22,49 +23,45 @@ async def get_shipment_info(reference_number: str) -> dict:
     shipment_data = {"data": dict(), "errors": dict()}  # We will populate this with scraped data and error messages
 
     async with async_playwright() as pw:
-        try:
-            # Set up browser tab
-            browser = await pw.chromium.launch(headless=False)
-            context = await browser.new_context()
-            page = await context.new_page()
-            page.set_default_timeout(TIMEOUT)
-            
-            client = await page.context.new_cdp_session(page)
-            await client.send("Network.emulateNetworkConditions", {
-                "offline": False,
-                "latency": 400,            # Latency in ms
-                "downloadThroughput": 1.5 * 1024 * 1024 / 8, # 400 kbps
-                "uploadThroughput": 700 * 1024 / 8,   # 400 kbps
-                "connectionType": "cellular3g"
-            })
+        async with await pw.chromium.launch() as browser:
+            try:
+                # Set up browser tab
+                context = await browser.new_context()
+                page = await context.new_page()
+                page.set_default_timeout(TIMEOUT)
+            except Exception as e:
+                shipment_data["errors"]["launch_browser"] = f"Error setting up headless browser (Playwright error): {e}"
+                logger.error(f"Error setting up headless browser (Playwright error): {e}")
+                return shipment_data
         
             # Go to DB Schenker page
             try:
                 await goto_shipment_page(page, reference_number)
-            except Exception as e:
+                await verify_page(page)
+            except ShipmentError as e:
                 shipment_data["errors"]["goto_shipment_page"] = f"Error going to page: {e}"
+                logger.error(f"Error going to page: {e}")
                 return shipment_data
             
             # Scrape data
             try:
                 shipment_data["data"]["shipment_details"] = await scrape_shipment_details(page)
             except Exception as e:
+                logger.error(f"Error scraping shipment detail: {e}")
                 shipment_data["errors"]["shipment_details"] = f"Error scraping shipment detail: {e}"
 
             try:
                 shipment_data["data"]["shipment_history"] = await scrape_shipment_history(page)
             except Exception as e:
+                logger.error(f"Error scraping shipment history: {e}")
                 shipment_data["errors"]["shipment_history"] = f"Error scraping shipment history: {e}"
 
             try:
                 shipment_data["data"]["package_histories"] = await scrape_packages_history(page)
             except Exception as e:
+                logger.error(f"Error scraping shipments individual package histories: {e}")
                 shipment_data["errors"]["package_histories"] = f"Error scraping shipments individual package histories: {e}"
             
-        except Exception as e:
-            shipment_data["errors"]["launch_browser"] = f"Error setting up headless browser (Playwright error): {e}"
-        
-
     return shipment_data
 
 
@@ -82,34 +79,32 @@ async def goto_shipment_page(page: Page, reference_number: str) -> None:
         await page.get_by_role("button", name="Required Cookies").click()
     except:
         pass # Button is assumed to not have showed up, move on
-
-    try:
-        await verify_page(page)
-    except Exception as e:
-        raise Exception(f"Could not verify that shipment page was reached: {e}")
     
 async def verify_page(page: Page) -> None:
+    """Looks for different elements in the html of the page to verify that it is a DB Schenker shipment page.
+    Args:
+        page: The Playwright Page object to verify"""
     not_found_locator = page.get_by_text("Shipment not found!")
     wrong_format_locator = page.get_by_text("Please specify reference type")
-    success_locator = page.get_by_text("Your shipment is delivered!")
+    success_locator = page.locator('[data-test="shipper_place_label"]')
 
     both_locator = wrong_format_locator.or_(success_locator).or_(not_found_locator)
 
     try:
-        await both_locator.first.wait_for(state="visible", timeout=3000)
+        await both_locator.first.wait_for(state="visible", timeout=3000) # If previous step was successful, this is fast even on relatively poor connection
     except:
-        raise Exception("Failed to load error or success locator in 3000ms.")
+        raise ShipmentError("Timed out, could not load error or success locator in 3000ms.")
     
     if await wrong_format_locator.is_visible():
-        raise ValueError("Invalid reference: Must be general shipment reference (not specific type).")
+        raise InvalidFormatError("Invalid reference ID format, must be general shipment reference (not specific type).")
     if await not_found_locator.is_visible():
-        raise ValueError("Invalid reference: Shipment not found.")
+        raise ShipmentNotFoundError("Invalid reference ID.")
     if not await success_locator.is_visible():
-        raise Exception("Unexpected page reached.")
+        raise UnknownPageError("Unexpected page reached, cannot navigate.")
     
 
 async def scrape_shipment_details(page: Page) -> dict:
-    """Returns the information from the 'Shipment Details' area.
+    """Returns the information from the 'Shipment Details' area of a DB Schenker Shipment.
     Args:
         page: A Playwright page object that has already gone to a specific DB Schenker shipment's page
     Returns:
@@ -144,7 +139,7 @@ async def scrape_shipment_details(page: Page) -> dict:
 
 
 async def scrape_shipment_history(page: Page) -> list[dict]:
-    """Returns the information from the 'Shipment Status History' area.
+    """Returns the information from the 'Shipment Status History' area of a DB Schenker shipment.
     Args:
         page: A Playwright page object that has already gone to a specific DB Schenker shipment's page.
     Returns:
@@ -181,7 +176,7 @@ async def scrape_shipment_history(page: Page) -> list[dict]:
     return status_history
 
 async def scrape_packages_history(page: Page) -> dict[str, list[dict[str, str]]]:
-    """Returns a dictionary of package IDs mapping to history info.
+    """Returns a dictionary of package IDs mapping to their respective vent history (e.g., 'sent', 'delivered', 'picked up')
     Args:
         page: A Playwright page object that has already gone to a specific DB Schenker shipment's page.
     Returns:
@@ -204,7 +199,7 @@ async def scrape_packages_history(page: Page) -> dict[str, list[dict[str, str]]]
     return packages_history
 
 async def scrape_package_history(table: Locator) -> list[dict[str, str]]:
-    """Extracts and returns the data from the given history table
+    """Extracts and returns the data from the given history table locator (of a DB Schenker shipment page).
     Args:
         table: playwright locator for the table containing the package history for a specific package in the 'Packages' region of the DB Schenker shipment page
     Returns:
@@ -233,16 +228,18 @@ async def scrape_package_history(table: Locator) -> list[dict[str, str]]:
             await next_page_button.click()
 
     return history
-"""
+
 def main():
     mcp.run(transport="stdio")
 
 if __name__ == "__main__":
     main()
 
-"""
+""" 
+# Uncomment this for manual testing of the functions (must comment away the above main and call to it)
 async def main():
    res = await get_shipment_info("1806203236")
    logger.info(res)
 
 asyncio.run(main())
+"""
