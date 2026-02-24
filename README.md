@@ -52,11 +52,11 @@ If uv is not found on your system, you might need to close the terminal and open
 }
 ```
 ##### 4. Verify setup
-   - Close Claude Desktop if it was running (you might need to end the task a task manager)
+   - Close Claude Desktop if it was running (you might need to end the in a task manager)
    - Open Claude Desktop
    - Click the + sign to the left of the text field
    - Hover over connectors
-   - You should not see "DBSchenker" listed as a connector.
+   - You should now see "DBSchenker" listed as a connector.
 
 #### You are now ready to test the server! Try asking Claude about the following reference IDs:
 - 1806203236 - Valid, one package
