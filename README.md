@@ -18,10 +18,13 @@ Automating website interaction is something I've had in mind for some projects t
 git clone https://github.com/VVikingsson/mcp-server.git
 cd mcp-server/dbschenker_server
 uv sync
+
 ```
+If uv is not found on your system, you might need to close the terminal and open another one.
 3. Set up Claude Desktop
    - [Download Claude Desktop for your OS](https://claude.com/download) (if you don't already have it)
    - Follow the installation instructions and open the app.
+   - Log in or create an account and proceed to the chat view.
    - Now in the app, click the hamburger menu in the top left.
    - Navigate to File -> Settings -> Developer.
    - Click 'Edit Config'.
@@ -50,6 +53,5 @@ uv sync
 
 You are now ready to test the server! Here are some example prompts:
 
-- Example prompts
-- Go
-- Here
+- "Give me the details of my package with reference number 1806203236"
+- "Can you show me the histories of the individual packages part shipment 1806290829"
