@@ -1,0 +1,29 @@
+[build-system]
+requires = ["uv_build>=0.10.6,<0.11.0"]
+build-backend = "uv_build"
+
+[project]
+name = "dbschenker-server"
+version = "0.1.0"
+dependencies = [
+    "mcp[cli]>=1.26.0",
+    "playwright>=1.58.0",
+]
+requires-python = ">=3.13"
+authors = [
+    {name = "Ville Vikingsson", email = "villevikingsson@gmail.com"}
+]
+description = "MCP Server for DB Schenker Shipments"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICEN[CS]E.*"]
+keywords = ["mcp", "DB Schenker", "model context protocol", "Sendify"]
+classifiers = [
+    "Programming Language :: Python"
+]
+
+[project.urls]
+Repository = "https://github.com/VVikingsson/mcp-server.git"
+
+[project.scripts]
+dbschenker_mcp_server = "dbschenker_server.mcp_server:main"
