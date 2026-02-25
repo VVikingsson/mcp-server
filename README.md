@@ -1,8 +1,5 @@
 # DB Schenker Shipment Information MCP Server
 
-Dear Sendify!
-I met you(r Erik) at the Gösta career fair and was intrigued by what seemed like a great place to work and grow. Of course, I decided to apply to the summer internship but then I found this opportunity for fast-tracking the application, so here I am!
-
 ## My journey and approach
 
 ### Understanding MCP:
