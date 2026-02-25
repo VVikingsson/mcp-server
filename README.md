@@ -18,13 +18,13 @@ In the end, I decided to go with short timeouts and prioritize usability. Since 
 ## How to test it yourself (with Claude Desktop)
 ##### 1. [Install uv for your OS](https://docs.astral.sh/uv/getting-started/installation/)
 ##### 2. Run commands to clone repository and install dependencies
+In a new terminal, paste the following:
 ```
 git clone https://github.com/VVikingsson/mcp-server.git
 cd mcp-server/dbschenker_server
 uv sync
 
 ```
-If uv is not found on your system, you might need to close the terminal and open another one and run `uv sync` in the dbschenker_server directory again. <br>
 ##### 3. Set up Claude Desktop 
    - [Download Claude Desktop for your OS](https://claude.com/download) (if you don't already have it)
    - Follow the installation instructions and open the app.
@@ -32,22 +32,12 @@ If uv is not found on your system, you might need to close the terminal and open
    - Now in the app, click the hamburger menu in the top left.
    - Navigate to File -> Settings -> Developer.
    - Click 'Edit Config'.
-   - Add the following, then save the file:
-```
-  {
-  "mcpServers": {
-    "DBSchenker": {
-      "command": "uv", // If this does not work, swap it out for the full path to uv.exe. Use 'where uv' in a terminal to find location.
-      "args": [
-        "--directory",
-        "C:\\ABSOLUTE\\PATH\\TO\\PARENT\\FOLDER\\dbschenker_server",
-        "run",
-        "mcp_server.py"
-      ]
-    }
-  }
-}
-```
+     <details>
+     <summary><it>If you see a file not found error...<it></summary>
+     <ul><li>Open your file explorer and head to the parent location of the directory shown in the error (remove "/Claude").</li>
+        <li>Create a folder called 'Claude' and continue from the next step.</li></ul>
+     </details>
+   - [Download the config file](resources/claude_desktop_config.json) and place it in the Claude folder.
 ##### 4. Verify setup
    - Close Claude Desktop if it was running (you might need to end the in a task manager)
    - Open Claude Desktop
