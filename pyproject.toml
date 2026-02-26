@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "dbschenker-mcp-server"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
     "mcp[cli]>=1.26.0",
     "playwright>=1.58.0",
@@ -26,4 +26,4 @@ classifiers = [
 Repository = "https://github.com/VVikingsson/mcp-server.git"
 
 [project.scripts]
-dbschenker_mcp_server = "dbschenker_mcp_server.mcp_server:main"
+dbschenker-mcp-server = "dbschenker_mcp_server.mcp_server:main"
