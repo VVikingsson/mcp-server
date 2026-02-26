@@ -4,7 +4,11 @@ The above shows Claude Desktop making use of my MCP tool, retrieving and structu
 [![PyPI version](https://img.shields.io/pypi/v/your-package-name.svg)](https://pypi.org/project/dbschenker-mcp-server/)
 ## How to test it yourself (with Claude Desktop)
 ##### 1. [Install uv for your OS](https://docs.astral.sh/uv/getting-started/installation/)
-##### 2. Set up Claude Desktop 
+##### 2. Install Playwright's chromium browser
+```
+uvx playwright install chromium
+```
+##### 3. Set up Claude Desktop 
    - [Download Claude Desktop for your OS](https://claude.com/download) (if you don't already have it)
    - Follow the installation instructions and open the app.
    - Log in or create an account and proceed to the chat view.
@@ -17,7 +21,7 @@ The above shows Claude Desktop making use of my MCP tool, retrieving and structu
         <li>Create a folder called 'Claude' and continue from the next step.</li></ul>
      </details>
    - [Download the config file](./resources/claude_desktop_config.json) and place it in the Claude folder, or add its contents to the config file if it already exists in the folder.
-##### 3. Verify setup
+##### 4. Verify setup
    - Close Claude Desktop if it was running (you might need to end the in a task manager)
    - Open Claude Desktop
    - Click the + sign to the left of the text field
