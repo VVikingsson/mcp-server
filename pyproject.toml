@@ -3,8 +3,8 @@ requires = ["uv_build>=0.10.6,<0.11.0"]
 build-backend = "uv_build"
 
 [project]
-name = "dbschenker-server"
-version = "0.1.0"
+name = "dbschenker-mcp-server"
+version = "0.1.1"
 dependencies = [
     "mcp[cli]>=1.26.0",
     "playwright>=1.58.0",
