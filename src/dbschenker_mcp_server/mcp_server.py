@@ -10,7 +10,7 @@ mcp = FastMCP("Schenker")
 logger = logging.getLogger(__name__)
 
 DBSCHENKER_SEARCH_URL = "https://www.dbschenker.com/app/tracking-public/?refNumber="
-TIMEOUT = 5000 # This was chosen after testing on a 'fast 3G' network throttle found on 'https://sdetective.blog/blog/qa_auto/pw-cdp/networking-throttle_en'. 'fast 3G' is hence what I decided to be the minimum usable connection for this tool.
+TIMEOUT = 5000 # See README for choice of timeout value
 
 @mcp.tool()
 async def get_shipment_info(reference_number: str) -> dict:
@@ -213,7 +213,7 @@ async def scrape_package_history(table: Locator) -> list[dict[str, str]]:
     next_page_button = paginator.get_by_label("Next page")
 
     while more_rows:
-        rows = await table.locator("> mat-row").all()
+        rows = await table.locator("> mat-row").all() # > means look only for immediate children for robustness
 
         for row in rows:
             data = dict()
@@ -224,6 +224,7 @@ async def scrape_package_history(table: Locator) -> list[dict[str, str]]:
 
             history.append(data)
 
+        # Check if there is a next page, if so click it and continue loop to scrape next page's data
         if more_rows := await next_page_button.is_enabled():
             await next_page_button.click()
 
