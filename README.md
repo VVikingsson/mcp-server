@@ -1,6 +1,7 @@
 # DB Schenker Shipment Information MCP Server
 ![demo](./resources/demo.gif)
-The above shows Claude Desktop making use of my MCP tool, retrieving and structuring data from [this website](https://www.dbschenker.com/app/tracking-public/?refNumber=VAN5022058&language_region=en-US_US&uiMode=)
+The above shows Claude Desktop making use of my MCP tool, retrieving and structuring data from [this website](https://www.dbschenker.com/app/tracking-public/?refNumber=VAN5022058&language_region=en-US_US&uiMode=) <br>
+[![PyPI version](https://img.shields.io/pypi/v/your-package-name.svg)](https://pypi.org/project/dbschenker-mcp-server/)
 ## How to test it yourself (with Claude Desktop)
 ##### 1. [Install uv for your OS](https://docs.astral.sh/uv/getting-started/installation/)
 ##### 2. Set up Claude Desktop 
