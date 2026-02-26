@@ -1,12 +1,9 @@
 {
   "mcpServers": {
-    "DBSchenker": {
-      "command": "uv", 
+    "dbschenker-mcp-server": {
+      "command": "uvx", 
       "args": [
-        "--directory",
-        "C:\\ABSOLUTE\\PATH\\TO\\PARENT\\FOLDER\\dbschenker_server",
-        "run",
-        "mcp_server.py"
+        "dbschenker-mcp-server"
       ]
     }
   }
