@@ -1,7 +1,7 @@
-# DB Schenker MCP Server
-
-MCP Server for tracking DB Schenker Shipments.
-
+---
+name: dbschenker-mcp-server
+description: MCP Server for tracking DB Schenker Shipments. Use when you want to get the live details and history of a DB Schenker shipment.
+---
 ## Configuration
 
 {
