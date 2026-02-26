@@ -6,5 +6,10 @@
         "dbschenker-mcp-server"
       ]
     }
+  },
+  "preferences": {
+    "coworkScheduledTasksEnabled": false,
+    "sidebarMode": "chat",
+    "coworkWebSearchEnabled": true
   }
 }
