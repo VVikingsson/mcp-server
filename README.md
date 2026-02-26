@@ -1,6 +1,5 @@
 # DB Schenker Shipment Information MCP Server
-![demo](./resources/demo.gif)
-The above shows Claude Desktop making use of my MCP tool, retrieving and structuring data from [this website](https://www.dbschenker.com/app/tracking-public/?refNumber=VAN5022058&language_region=en-US_US&uiMode=)
+
 ## My journey and approach
 
 ### Understanding MCP:
