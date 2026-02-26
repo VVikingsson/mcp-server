@@ -16,7 +16,7 @@ authors = [
 description = "MCP Server for DB Schenker Shipments"
 readme = "README.md"
 license = "MIT"
-license-files = ["LICEN[CS]E.*"]
+license-files = ["LICENSE"]
 keywords = ["mcp", "DB Schenker", "model context protocol", "Sendify"]
 classifiers = [
     "Programming Language :: Python"
