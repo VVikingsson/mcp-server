@@ -42,4 +42,4 @@ In the end, I decided to go with short timeouts and prioritize usability. Since 
 - 1806203236 - Valid, one package
 - 1806290829 - Valid, two packages
 - 180620323  - Invalid, should not find.
-- 123        - Invalid format, should tell you to provide a general shipment ID, not a specific type.
+- 123        - Invalid, should ask you for correct format.
