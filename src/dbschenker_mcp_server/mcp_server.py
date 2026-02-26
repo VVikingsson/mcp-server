@@ -1,6 +1,6 @@
 import logging
 import asyncio
-from dbschenker_server.exceptions import *
+from dbschenker_mcp_server.exceptions import *
 from playwright.async_api import async_playwright, Page, Locator
 from mcp.server.fastmcp import FastMCP
 

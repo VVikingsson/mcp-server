@@ -26,4 +26,4 @@ classifiers = [
 Repository = "https://github.com/VVikingsson/mcp-server.git"
 
 [project.scripts]
-dbschenker_mcp_server = "dbschenker_server.mcp_server:main"
+dbschenker_mcp_server = "dbschenker_mcp_server.mcp_server:main"
