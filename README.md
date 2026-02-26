@@ -1,12 +1,13 @@
 # DB Schenker Shipment Information MCP Server
-
+![demo](./resources/demo.gif)
+The above shows Claude Desktop making use of my MCP tool, retrieving and structuring data from [this website](https://www.dbschenker.com/app/tracking-public/?refNumber=VAN5022058&language_region=en-US_US&uiMode=)
 ## My journey and approach
 
 ### Understanding MCP:
-I had never heard of MCP prior to this, so I started by visiting their documentation. A skill I've developed during my studies is how to use LLMs to improve my learning (as opposed to impede - the trap which many students fall in), so I also asked lots of questions asking for pedagogical explanations. Whenever something didn't quite feel intuitive or right, it was of course important to fact check the robot. Since I've studied network protocols, understanding MCP was rather intuitive.
+I had never heard of MCP prior to this, so I started by visiting their documentation. A skill I've developed during my studies is how to use LLMs to improve my learning (as opposed to impede - the trap which many students fall in), so I also made lots of prompts asking for pedagogical explanations. Whenever something didn't quite feel intuitive or right, it was of course important to fact check the robot. Since I've studied network protocols, understanding MCP was rather intuitive.
 
 ### Learning Web Scraping:
-Automating website interaction is something I've had in mind for some projects that only ever stayed in my head, but with this I had no choice but to learn it. At first, I thought I would be parsing HTML using a simple request library but, of course, someone has always had the same problem as you have and there exists a good library for most things. My approach to selecting a library to use was to describe the use case to an LLM and then ask it for suggestions with provided rationale. I got recommended Playwright, a library for automating web tests, and after looking into it for some time I decided to stick with it. In essence, it launches a headless browser and provides an intuitive way for you as a programmer to navigate it.
+Automating website interaction is something I've had in mind for some projects that only ever stayed in my head, but with this I had no choice but to learn it. At first, I thought I would be parsing HTML using a simple request library but, of course, someone has always had the same problem as you have and there exists a good library for most things. My approach to selecting a library to use was to describe the use case to an LLM and then ask it for suggestions with provided rationale. I got recommended Playwright, a library for automating web tests, and after looking into their documentation I decided to stick with it. In essence, it launches a headless browser and provides an intuitive API for you as a programmer to navigate it.
 
 ### Usability vs Reliability:
 Through building this MCP server, I continuously tweaked the timeout values up and down with two opposite arguments in my head:
@@ -17,15 +18,7 @@ In the end, I decided to go with short timeouts and prioritize usability. Since 
 
 ## How to test it yourself (with Claude Desktop)
 ##### 1. [Install uv for your OS](https://docs.astral.sh/uv/getting-started/installation/)
-##### 2. Run commands to clone repository and install dependencies
-In a new terminal, paste the following:
-```
-git clone https://github.com/VVikingsson/mcp-server.git
-cd mcp-server/dbschenker_server
-uv sync
-
-```
-##### 3. Set up Claude Desktop 
+##### 2. Set up Claude Desktop 
    - [Download Claude Desktop for your OS](https://claude.com/download) (if you don't already have it)
    - Follow the installation instructions and open the app.
    - Log in or create an account and proceed to the chat view.
@@ -37,8 +30,8 @@ uv sync
      <ul><li>Open your file explorer and head to the parent location of the directory shown in the error (remove "/Claude").</li>
         <li>Create a folder called 'Claude' and continue from the next step.</li></ul>
      </details>
-   - [Download the config file](resources/claude_desktop_config.json) and place it in the Claude folder.
-##### 4. Verify setup
+   - [Download the config file](./resources/claude_desktop_config.json) and place it in the Claude folder, or add its contents to the config file if it already exists in the folder.
+##### 3. Verify setup
    - Close Claude Desktop if it was running (you might need to end the in a task manager)
    - Open Claude Desktop
    - Click the + sign to the left of the text field
